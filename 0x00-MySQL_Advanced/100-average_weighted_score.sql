@@ -9,11 +9,11 @@ BEGIN
 	-- of the quizzes they have taken
 	UPDATE users
 	SET average_score = (
-		SELECT SUM(corrections.score * quizzes.weight) / SUM(quizzes.weight)
+		SELECT SUM(corrections.score * projects.weight) / SUM(projects.weight)
 		FROM corrections
-		JOIN quizzes ON quizzes.id = corrections.quiz_id
+		INNER JOIN projects ON projects.id = corrections.project_id
 		WHERE corrections.user_id = user_id
-	);
+	)
 	WHERE user.id = user_id;
 END $$
 DELIMITER ;
