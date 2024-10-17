@@ -5,7 +5,7 @@
 -- Import the table dump: metal_bands.sql.zip
 
 -- Select bands with Glam rock as their main style and calculate their lifespan
-SELECT band_name, IFNULL(split, 2022) - IFNULL(formed, 0) AS lifespan
+SELECT band_name, (IFNULL(split, '2022') - formed) AS lifespan
 FROM metal_bands
-WHERE style = '%Glam rock%'
+WHERE style LIKE '%Glam rock%'
 ORDER BY lifespan DESC;
