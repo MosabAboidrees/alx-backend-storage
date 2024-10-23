@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 This module defines the Cache class for storing data in Redis and
-a decorator to count method calls.
+decorators for counting method calls and storing call history.
 """
 
 import redis
 import uuid
-from typing import Union, Callable, Optional
+from typing import Union, Callable
 from functools import wraps
 
 
@@ -22,17 +22,40 @@ def count_calls(method: Callable) -> Callable:
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
-        """
-        Wrapper function that increments the method call count in Redis
-        and calls the original method.
-        """
-        # Use the method's qualified name as the Redis key
         key = method.__qualname__
-        # Increment the count in Redis
         self._redis.incr(key)
-        # Call the original method and return its result
         return method(self, *args, **kwargs)
-    
+    return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """
+    A decorator that stores the history of inputs and outputs for a method.
+
+    Args:
+        method (Callable): The method to be decorated.
+
+    Returns:
+        Callable: The decorated method that stores input/output history in Redis.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        # Get the method's qualified name
+        inputs_key = f"{method.__qualname__}:inputs"
+        outputs_key = f"{method.__qualname__}:outputs"
+
+        # Convert input arguments to string and store them in the 'inputs' list
+        self._redis.rpush(inputs_key, str(args))
+
+        # Call the original method and get the result
+        result = method(self, *args, **kwargs)
+
+        # Store the result in the 'outputs' list
+        self._redis.rpush(outputs_key, str(result))
+
+        # Return the result of the original method
+        return result
+
     return wrapper
 
 
@@ -49,14 +72,15 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store the data in Redis using a random key and count the number of times
         this method is called.
-        
+
         Args:
             data (Union[str, bytes, int, float]): The data to store in Redis.
-        
+
         Returns:
             str: The generated key for retrieving the stored data.
         """
@@ -66,7 +90,7 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Optional[Callable] = None) -> Union[str, bytes, int, float, None]:
+    def get(self, key: str, fn: Callable = None) -> Union[str, bytes, int, float, None]:
         """
         Retrieve the value from Redis and apply an optional conversion function.
 
@@ -81,7 +105,7 @@ class Cache:
         value = self._redis.get(key)
         if value is None:
             return None
-        if fn is not None:
+        if fn:
             return fn(value)
         return value
 
@@ -95,7 +119,7 @@ class Cache:
         Returns:
             str: The string value from Redis.
         """
-        return self.get(key, fn=lambda d: d.decode("utf-8"))
+        return self.get(key, lambda d: d.decode('utf-8'))
 
     def get_int(self, key: str) -> int:
         """
@@ -106,5 +130,4 @@ class Cache:
 
         Returns:
             int: The integer value from Redis.
-        """
-        return self.get(key, fn=int)
+       
