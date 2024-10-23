@@ -11,27 +11,20 @@ def log_stats():
     Provides some stats about Nginx logs stored in MongoDB.
     """
     # Connect to MongoDB
-    client = MongoClient('mongodb://127.0.0.1:27017')
-    db = client.logs
-    collection = db.nginx
+    client = MongoClient('mongodb://127.0.0.1:27017').logs.nginx
 
     # Get total number of logs
-    total_logs = collection.count_documents({})
+    total_logs = client.count_documents({})
 
     # Get count for each HTTP method
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
-    method_counts = {}
+    print('Methods:')
     for method in methods:
-        method_counts[method] = collection.count_documents({"method": method})
+        method_counts = collection.count_documents({"method": method})
+        print(f'\tmethod {method}: {method_counts}')
 
     # Get count of GET requests to /status path
     status_check_count = collection.count_documents({"method": "GET", "path": "/status"})
-
-    # Print results
-    print(f"{total_logs} logs")
-    print("Methods:")
-    for method in methods:
-        print(f"\tmethod {method}: {method_counts[method]}")
     print(f"{status_check_count} status check")
 
 if __name__ == "__main__":
