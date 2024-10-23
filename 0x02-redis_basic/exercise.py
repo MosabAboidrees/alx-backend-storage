@@ -28,13 +28,14 @@ def count_calls(method: Callable) -> Callable:
 
 def call_history(method: Callable) -> Callable:
     """
-    A decorator that stores the history of inputs and outputs for a method.
+    A decorator that stores the history
+    of inputs and outputs for a method.
     Args:
         method (Callable): The method to be decorated.
     Returns:
-        Callable: The decorated method that stores input/output history in Redis.
+        Callable: The decorated method that stores
+        input/output history in Redis.
     """
-
 
     @wraps(method)
     def wrapper(self, *args, **kwargs):
@@ -78,14 +79,14 @@ def replay(method: Callable) -> None:
 
     # Iterate through inputs and outputs and display them
     for input_value, output_value in zip(inputs, outputs):
-        print(f"{method_name}(*{input_value.decode('utf-8')}) -> {output_value.decode('utf-8')}")
+        print(f"{method_name}(*{input_value.decode('utf-8')})\
+            -> {output_value.decode('utf-8')}")
 
 
 class Cache:
     """
     Cache class to interact with Redis for storing and retrieving data.
     """
-
 
     def __init__(self):
         """
@@ -94,15 +95,15 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-
     @count_calls
     @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
-        Store the data in Redis using a random key and count the number of times
-        this method is called.
+        Store the data in Redis using a random key and count the number
+        of times this method is called.
         Args:
-            data (Union[str, bytes, int, float]): The data to store in Redis.
+            data (Union[str, bytes, int, float]):
+            The data to store in Redis.
         Returns:
             str: The generated key for retrieving the stored data.
         """
@@ -112,16 +113,20 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-
-    def get(self, key: str, fn: Callable = None) -> Union[str, bytes, int, float, None]:
+    def get(
+            self, key: str, fn: Callable = None)\
+            -> Union[str, bytes, int, float, None]:
         """
-        Retrieve the value from Redis and apply an optional conversion function.
+        Retrieve the value from Redis and apply
+        an optional conversion function.
         Args:
             key (str): The key to retrieve the value from Redis.
-            fn (Optional[Callable]): A function to apply to the retrieved value.
+            fn (Optional[Callable]):
+            A function to apply to the retrieved value.
         Returns:
-            Union[str, bytes, int, float, None]: The value from Redis after applying fn if provided,
-                                                 or None if the key does not exist.
+            Union[str, bytes, int, float, None]:
+            The value from Redis after applying fn if provided,
+            or None if the key does not exist.
         """
         value = self._redis.get(key)
         if value is None:
@@ -129,7 +134,6 @@ class Cache:
         if fn:
             return fn(value)
         return value
-
 
     def get_str(self, key: str) -> str:
         """
@@ -140,7 +144,6 @@ class Cache:
             str: The string value from Redis.
         """
         return self.get(key, lambda d: d.decode('utf-8'))
-
 
     def get_int(self, key: str) -> int:
         """
