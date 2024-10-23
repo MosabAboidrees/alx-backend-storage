@@ -13,18 +13,22 @@ def log_stats():
     # Connect to MongoDB
     client = MongoClient('mongodb://127.0.0.1:27017').logs.nginx
 
+    # Nginx logs
+    print(f"{client.estimated_document_count()} logs")
+
     # Get total number of logs
     total_logs = client.count_documents({})
 
     # Get count for each HTTP method
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+
     print('Methods:')
     for method in methods:
-        method_counts = collection.count_documents({"method": method})
+        method_counts = client.count_documents({"method": method})
         print(f'\tmethod {method}: {method_counts}')
 
     # Get count of GET requests to /status path
-    status_check_count = collection.count_documents({"method": "GET", "path": "/status"})
+    status_check_count = client.count_documents({"method": "GET", "path": "/status"})
     print(f"{status_check_count} status check")
 
 if __name__ == "__main__":
