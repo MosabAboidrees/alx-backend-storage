@@ -1,33 +1,38 @@
 #!/usr/bin/env python3
-""" Module to provide statistics about Nginx logs stored in MongoDB """
-
+'''Task 12's module: Provides some stats about Nginx logs stored in MongoDB.
+'''
 from pymongo import MongoClient
 
-#!/usr/bin/env python3
-""" MongoDB Operations with Python using pymongo """
-from pymongo import MongoClient
 
-if __name__ == "__main__":
-    """ Provides some stats about Nginx logs stored in MongoDB """
-    
-    # Connect to MongoDB
-    client = MongoClient('mongodb://127.0.0.1:27017')
-    nginx_collection = client.logs.nginx
+def print_nginx_request_logs(nginx_collection):
+    '''Prints stats about Nginx request logs.
+    '''
+    # Total number of logs
+    print('{} logs'.format(nginx_collection.count_documents({})))
 
-    # Get total number of logs
-    n_logs = nginx_collection.count_documents({})
-    print(f'{n_logs} logs')
-
-    # Get count for each HTTP method
-    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    # Methods stats
     print('Methods:')
+    methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
     for method in methods:
-        count = nginx_collection.count_documents({"method": method})
-        print(f'\tmethod {method}: {count}')
+        req_count = nginx_collection.count_documents({'method': method})
+        print('\tmethod {}: {}'.format(method, req_count))
 
-    # Get count of GET requests to /status path
-    status_check = nginx_collection.count_documents(
-        {"method": "GET", "path": "/status"}
-    )
+    # GET requests to /status
+    status_checks_count = nginx_collection.count_documents({
+        'method': 'GET', 'path': '/status'
+    })
+    print('{} status check'.format(status_checks_count))
 
-    print(f'{status_check} status check')
+
+def run():
+    '''Provides some stats about Nginx logs stored in MongoDB.
+    '''
+    # Connect to the MongoDB server
+    client = MongoClient('mongodb://127.0.0.1:27017')
+
+    # Call the function to print stats
+    print_nginx_request_logs(client.logs.nginx)
+
+
+if __name__ == '__main__':
+    run()
