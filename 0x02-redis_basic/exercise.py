@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 This module defines the Cache class for storing data in Redis and
-decorators for counting method calls and storing call history.
+decorators for counting method calls, storing call history, and retrieving it.
 """
 
 import redis
@@ -40,23 +40,49 @@ def call_history(method: Callable) -> Callable:
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
-        # Get the method's qualified name
         inputs_key = f"{method.__qualname__}:inputs"
         outputs_key = f"{method.__qualname__}:outputs"
 
-        # Convert input arguments to string and store them in the 'inputs' list
+        # Store inputs as a string
         self._redis.rpush(inputs_key, str(args))
 
-        # Call the original method and get the result
+        # Call the original method
         result = method(self, *args, **kwargs)
 
-        # Store the result in the 'outputs' list
+        # Store the output
         self._redis.rpush(outputs_key, str(result))
 
-        # Return the result of the original method
         return result
 
     return wrapper
+
+
+def replay(method: Callable) -> None:
+    """
+    Display the history of calls to a method.
+
+    Args:
+        method (Callable): The method for which to display the history.
+
+    Returns:
+        None
+    """
+    redis_instance = method.__self__._redis
+    method_name = method.__qualname__
+
+    # Retrieve inputs and outputs from Redis
+    inputs_key = f"{method_name}:inputs"
+    outputs_key = f"{method_name}:outputs"
+    inputs = redis_instance.lrange(inputs_key, 0, -1)
+    outputs = redis_instance.lrange(outputs_key, 0, -1)
+
+    # Number of calls
+    call_count = len(inputs)
+    print(f"{method_name} was called {call_count} times:")
+
+    # Iterate through inputs and outputs and display them
+    for input_value, output_value in zip(inputs, outputs):
+        print(f"{method_name}(*{input_value.decode('utf-8')}) -> {output_value.decode('utf-8')}")
 
 
 class Cache:
