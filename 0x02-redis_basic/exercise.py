@@ -130,4 +130,5 @@ class Cache:
 
         Returns:
             int: The integer value from Redis.
-       
+        """
+        return self.get(key, int)
