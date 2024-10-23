@@ -13,10 +13,8 @@ from functools import wraps
 def count_calls(method: Callable) -> Callable:
     """
     A decorator that counts the number of times a method is called.
-
     Args:
         method (Callable): The method to be decorated.
-
     Returns:
         Callable: The decorated method that increments the count in Redis.
     """
@@ -31,10 +29,8 @@ def count_calls(method: Callable) -> Callable:
 def call_history(method: Callable) -> Callable:
     """
     A decorator that stores the history of inputs and outputs for a method.
-
     Args:
         method (Callable): The method to be decorated.
-
     Returns:
         Callable: The decorated method that stores input/output history in Redis.
     """
@@ -62,10 +58,8 @@ def call_history(method: Callable) -> Callable:
 def replay(method: Callable) -> None:
     """
     Display the history of calls to a method.
-
     Args:
         method (Callable): The method for which to display the history.
-
     Returns:
         None
     """
@@ -107,10 +101,8 @@ class Cache:
         """
         Store the data in Redis using a random key and count the number of times
         this method is called.
-
         Args:
             data (Union[str, bytes, int, float]): The data to store in Redis.
-
         Returns:
             str: The generated key for retrieving the stored data.
         """
@@ -124,11 +116,9 @@ class Cache:
     def get(self, key: str, fn: Callable = None) -> Union[str, bytes, int, float, None]:
         """
         Retrieve the value from Redis and apply an optional conversion function.
-
         Args:
             key (str): The key to retrieve the value from Redis.
             fn (Optional[Callable]): A function to apply to the retrieved value.
-
         Returns:
             Union[str, bytes, int, float, None]: The value from Redis after applying fn if provided,
                                                  or None if the key does not exist.
@@ -144,10 +134,8 @@ class Cache:
     def get_str(self, key: str) -> str:
         """
         Retrieve the string value from Redis for the given key.
-
         Args:
             key (str): The key to retrieve the value from Redis.
-
         Returns:
             str: The string value from Redis.
         """
@@ -157,10 +145,8 @@ class Cache:
     def get_int(self, key: str) -> int:
         """
         Retrieve the integer value from Redis for the given key.
-
         Args:
             key (str): The key to retrieve the value from Redis.
-
         Returns:
             int: The integer value from Redis.
         """
