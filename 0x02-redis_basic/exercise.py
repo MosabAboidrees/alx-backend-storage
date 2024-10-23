@@ -38,6 +38,8 @@ def call_history(method: Callable) -> Callable:
     Returns:
         Callable: The decorated method that stores input/output history in Redis.
     """
+
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         inputs_key = f"{method.__qualname__}:inputs"
@@ -90,12 +92,14 @@ class Cache:
     Cache class to interact with Redis for storing and retrieving data.
     """
 
+
     def __init__(self):
         """
         Initialize the Cache class with a Redis client and flush the database.
         """
         self._redis = redis.Redis()
         self._redis.flushdb()
+
 
     @count_calls
     @call_history
@@ -116,6 +120,7 @@ class Cache:
         self._redis.set(key, data)
         return key
 
+
     def get(self, key: str, fn: Callable = None) -> Union[str, bytes, int, float, None]:
         """
         Retrieve the value from Redis and apply an optional conversion function.
@@ -135,6 +140,7 @@ class Cache:
             return fn(value)
         return value
 
+
     def get_str(self, key: str) -> str:
         """
         Retrieve the string value from Redis for the given key.
@@ -146,6 +152,7 @@ class Cache:
             str: The string value from Redis.
         """
         return self.get(key, lambda d: d.decode('utf-8'))
+
 
     def get_int(self, key: str) -> int:
         """
